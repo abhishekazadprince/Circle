@@ -1,0 +1,1230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="An interactive, easy-to-understand guide to the geometry of motion, rotating coordinates, and the foundations of kinematics.">
+    <title>The Geometry of Motion | Interactive Kinematics</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        serif: ['Lora', 'serif'],
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace'],
+                    },
+                    colors: {
+                        book: {
+                            bg: '#fcfcfc',
+                            text: '#222222',
+                            accent: '#7a2020',
+                            sidebar: '#f7f5f0',
+                            border: '#e2e8f0',
+                            muted: '#5a6b7c'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        /* Base typography and colors */
+        body { background-color: theme('colors.book.bg'); color: theme('colors.book.text'); font-size: 1.125rem; line-height: 1.75; }
+        h1, h2, h3, h4 { font-family: 'Inter', sans-serif; color: theme('colors.book.accent'); }
+        h1 { font-weight: 700; letter-spacing: -0.02em; }
+        h2 { font-weight: 600; letter-spacing: -0.01em; margin-top: 3rem; }
+        p { margin-bottom: 1.5em; color: #2d3748; }
+        ul { list-style-type: disc; padding-left: 2rem; margin-bottom: 1.5em; }
+        li { margin-bottom: 0.5rem; }
+        
+        /* Educational Components */
+        .insight-box { border-left: 3px solid theme('colors.book.muted'); background: #f8fafc; padding: 1.5rem 1.75rem; border-radius: 0 0.5rem 0.5rem 0; margin: 2.5rem 0; font-size: 1.05rem; }
+        .insight-title { font-family: 'Inter', sans-serif; font-weight: 600; color: theme('colors.book.muted'); text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.8rem; margin-bottom: 0.75rem; }
+        
+        .theorem-box { border: 1px solid theme('colors.book.border'); background: #ffffff; padding: 2rem; border-radius: 0.5rem; margin: 2.5rem 0; box-shadow: 0 1px 2px rgba(0,0,0,0.03); }
+        .theorem-title { font-family: 'Inter', sans-serif; font-weight: 600; color: theme('colors.book.accent'); margin-bottom: 1rem; font-size: 1.1rem; border-bottom: 1px solid theme('colors.book.border'); padding-bottom: 0.5rem;}
+        
+        .chapter-divider { display: flex; align-items: center; justify-content: center; margin: 5rem 0 4rem; opacity: 0.6; }
+        .chapter-divider::before, .chapter-divider::after { content: ''; flex: 1; height: 1px; background: theme('colors.book.border'); }
+        .chapter-divider span { padding: 0 1rem; color: theme('colors.book.muted'); font-size: 1.5rem; font-family: 'serif'; }
+        
+        .dependency-flow { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin: 2rem 0; }
+        .flow-arrow { color: theme('colors.book.muted'); font-size: 1.25rem; line-height: 1; }
+
+        /* Interactive Figure Styling */
+        figure.simulation-container { background: #ffffff; border: 1px solid theme('colors.book.border'); border-radius: 0.5rem; padding: 1.5rem; margin: 3rem 0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.02); break-inside: avoid; }
+        figcaption { font-family: 'Inter', sans-serif; font-size: 0.95rem; color: #526071; margin-top: 1.25rem; border-top: 1px solid #f1f5f9; padding-top: 1rem; line-height: 1.6;}
+        .fig-number { font-weight: 600; color: theme('colors.book.text'); }
+        .sim-observe { background: #f8fafc; padding: 0.75rem 1rem; border-radius: 0.375rem; border-left: 2px solid theme('colors.book.accent'); margin-top: 1rem; font-size: 0.9rem; }
+        
+        /* Aspect Ratio scaling ensures math draws perfectly regardless of screen size */
+        .sim-canvas { width: 100%; height: auto; aspect-ratio: 2/1; border-radius: 0.25rem; background: #fafafa; border: 1px solid #f1f5f9; cursor: crosshair; display: block; margin: 0 auto; touch-action: none;}
+        
+        .sim-controls { display: flex; gap: 1rem; margin-top: 1.25rem; align-items: center; justify-content: center; flex-wrap: wrap; background: #f8fafc; padding: 1rem; border-radius: 0.5rem; }
+        .sim-btn { background: theme('colors.book.accent'); color: white; padding: 0.5rem 1.25rem; border-radius: 0.375rem; font-family: 'Inter', sans-serif; font-weight: 500; font-size: 0.9rem; cursor: pointer; transition: background 0.2s, transform 0.1s; border: none; }
+        .sim-btn:hover { background: #5a1717; }
+        .sim-btn:active { transform: translateY(1px); }
+        .sim-btn-active-state { background: #10b981 !important; }
+        .sim-slider { accent-color: theme('colors.book.accent'); cursor: pointer; }
+        
+        /* Math display adjustments */
+        .math-container { overflow-x: auto; overflow-y: hidden; margin: 1.75em 0; padding: 0.5em 0; }
+        .MathJax_Display { margin: 0 !important; }
+        
+        /* Layout */
+        .layout-wrapper { display: flex; min-height: 100vh; flex-direction: column; }
+        @media (min-width: 1024px) { .layout-wrapper { flex-direction: row; } }
+        
+        /* Mobile Header */
+        .mobile-header { display: flex; background: theme('colors.book.sidebar'); padding: 1rem 1.5rem; border-bottom: 1px solid theme('colors.book.border'); align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 50; }
+        @media (min-width: 1024px) { .mobile-header { display: none; } }
+        
+        /* Sidebar - Explicit solid background to prevent transparency overlap */
+        .sidebar { width: 320px; background-color: theme('colors.book.sidebar'); padding: 2.5rem 2rem; position: fixed; height: 100vh; overflow-y: auto; border-right: 1px solid theme('colors.book.border'); transition: transform 0.3s ease; z-index: 60; }
+        .main-content { margin-left: 0; padding: 2rem 1.5rem; max-width: 100%; flex-grow: 1; }
+        
+        /* Dim overlay for mobile when sidebar is open */
+        #mobile-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 55; transition: opacity 0.3s; opacity: 0; pointer-events: none; }
+        #mobile-overlay.active { opacity: 1; pointer-events: auto; }
+
+        @media (min-width: 1024px) {
+            .sidebar { transform: translateX(0) !important; }
+            .main-content { margin-left: 320px; padding: 5rem 6%; max-width: 980px; }
+            #mobile-overlay { display: none; }
+        }
+        @media (max-width: 1023px) {
+            .sidebar { transform: translateX(-100%); padding-top: 1.5rem; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+            .sidebar.open { transform: translateX(0); }
+        }
+
+        .nav-link { display: block; padding: 0.35rem 0; color: #4b5563; text-decoration: none; font-family: 'Inter', sans-serif; transition: color 0.2s; font-size: 0.9rem; line-height: 1.4;}
+        .nav-link:hover { color: theme('colors.book.accent'); }
+        .nav-section { margin-top: 1.75rem; font-weight: 600; color: #374151; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        
+        /* Table styling */
+        .comparison-table { width: 100%; border-collapse: collapse; text-align: left; margin: 2rem 0; }
+        .comparison-table th { background: #f8fafc; font-weight: 600; color: #334155; padding: 1rem; border-bottom: 2px solid theme('colors.book.border'); font-family: 'Inter', sans-serif; font-size: 0.95rem;}
+        .comparison-table td { padding: 1rem; border-bottom: 1px solid theme('colors.book.border'); font-size: 0.95rem; }
+        
+        /* Print Stylesheet */
+        @media print {
+            .sidebar, .mobile-header, .sim-controls, .sim-observe, #mobile-overlay { display: none !important; }
+            .main-content { margin: 0 !important; padding: 0 !important; max-width: 100% !important; }
+            body { background: white; color: black; font-size: 11pt; }
+            .simulation-container { border: none; box-shadow: none; margin: 1rem 0; padding: 0; }
+            .sim-canvas { border: 1px solid #ccc; max-width: 80%; }
+            .insight-box { border-left: 2px solid black; background: white; }
+            .theorem-box { border: 1px solid black; }
+            a { text-decoration: none; color: black; }
+        }
+    </style>
+</head>
+<body class="selection:bg-red-100 selection:text-red-900">
+
+<!-- Mobile overlay to prevent clicking/reading text when menu is open -->
+<div id="mobile-overlay"></div>
+
+<div class="layout-wrapper">
+    <!-- Mobile Header -->
+    <header class="mobile-header shadow-sm">
+        <div class="font-sans font-semibold text-book-accent truncate">The Geometry of Motion</div>
+        <button id="mobile-menu-btn" class="p-2 text-gray-600 focus:outline-none rounded" aria-label="Toggle navigation menu">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </header>
+
+    <!-- Sidebar / Table of Contents -->
+    <nav id="sidebar" class="sidebar">
+        <h2 class="text-xl font-bold mb-6 text-book-accent font-sans">Contents</h2>
+        <a href="#front-matter" class="nav-link font-medium">Front Matter & Conventions</a>
+        <a href="#preface" class="nav-link">Preface</a>
+        
+        <div class="nav-section">I. Setting the Scene</div>
+        <a href="#ch1" class="nav-link">1. Straight Lines vs. Curved Paths</a>
+        <a href="#ch2" class="nav-link">2. Choosing the Right Coordinates</a>
+        
+        <div class="nav-section">II. Rotational Math</div>
+        <a href="#ch3" class="nav-link">3. Rotating Basis Vectors</a>
+        <a href="#ch4" class="nav-link">4. The Derivative of a Direction</a>
+        <a href="#ch5" class="nav-link">5. Why Velocity Points Tangentially</a>
+        <a href="#ch6" class="nav-link">6. Acceleration: Speed vs. Direction</a>
+        
+        <div class="nav-section">III. Advanced Tools</div>
+        <a href="#ch7" class="nav-link">7. Using Cross Products for 3D</a>
+        <a href="#ch8" class="nav-link">8. The Magic of Complex Numbers</a>
+        <a href="#ch9" class="nav-link">9. Rotating Frames & Apparent Forces</a>
+        <a href="#ch10" class="nav-link">10. Summary of the Math</a>
+        
+        <div class="nav-section">IV. Extras</div>
+        <a href="#conclusion" class="nav-link">Conclusion</a>
+        <a href="#appendix" class="nav-link">Appendix: The Center of Mass</a>
+    </nav>
+
+    <main class="main-content">
+        
+        <article>
+            <header id="front-matter" class="text-center py-12 lg:py-20 border-b border-gray-200 mb-12">
+                <h1 class="text-4xl lg:text-5xl mb-6">The Geometry of Motion</h1>
+                <h2 class="text-2xl lg:text-3xl text-gray-700 font-sans font-light mb-6">Understanding Circular Motion, Rotating Coordinates, and Kinematics</h2>
+                <div class="font-sans text-sm text-gray-500 uppercase tracking-widest mb-8">An Interactive Guide</div>
+                
+                <div class="max-w-2xl mx-auto text-left bg-gray-50 border border-gray-100 p-6 rounded text-sm font-sans mt-12">
+                    <h3 class="font-semibold text-gray-700 uppercase tracking-wider mb-3 text-xs">A Quick Guide to Our Math Symbols</h3>
+                    <ul class="grid grid-cols-1 md:grid-cols-2 gap-2 text-gray-600 mb-0 pb-0">
+                        <li>\(\mathbf{r}, \mathbf{v}, \mathbf{a}\) : Position, velocity, acceleration (vectors).</li>
+                        <li>\(r, v, a\) : Scalar magnitudes of those vectors.</li>
+                        <li>\(\hat{i}, \hat{j}\) : Standard, fixed (x, y) basis vectors.</li>
+                        <li>\(\mathbf{u}_r, \mathbf{u}_\theta\) : Rotating (polar) basis vectors.</li>
+                        <li>\(\omega, \alpha\) : Angular velocity and acceleration.</li>
+                        <li>\(\boldsymbol{\omega}\) : Angular velocity written as a 3D vector.</li>
+                    </ul>
+                </div>
+            </header>
+
+            <section id="preface">
+                <h2 class="text-3xl mb-6">Preface</h2>
+                <p>Throughout history, physics has balanced two ways of thinking about space. On Earth, when we build houses or survey land, we use straight lines and square grids. But thousands of years ago, before we mapped the land, humans mapped the sky. We tracked the moon, watched the sun, and observed the stars spinning above us. Because of this, humans realized very early on that natural motion is often circular.</p>
+                
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 0.1:</span> The Night Sky in Motion.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Click and drag across the starry sky below to change your view. Notice how this pure, sweeping rotation feels entirely natural—long before humans ever invented rigid "x" and "y" axes, the sky was teaching us about circles.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-sky" class="sim-canvas bg-black" aria-label="Interactive starry sky simulation" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn" id="btn-sky-play">Pause/Play Sky</button>
+                        <label class="font-sans text-sm flex items-center gap-2 font-medium text-gray-700">
+                            Rotation Speed: <input type="range" class="sim-slider" id="slider-sky-speed" min="0.1" max="5" step="0.1" value="1" aria-label="Adjust sky rotation speed">
+                        </label>
+                    </div>
+                </figure>
+
+                <p>This guide explores a big leap in introductory physics: moving from fixed, straight grids to coordinate systems that spin right along with the object you are studying. When we study circular motion, we run into a fascinating mathematical puzzle: how do you describe a spatial direction that is constantly changing?</p>
+                <p>By using interactive simulations alongside standard math equations, we're going to break down how to handle rotating coordinate systems. This isn't just useful for spinning wheels—it's the stepping stone you need for understanding everything from planetary orbits to Einstein's general relativity.</p>
+            </section>
+
+            <div class="chapter-divider"><span>&#10086;</span></div>
+
+            <section id="ch1">
+                <h2 class="text-3xl mb-6">1. Straight Lines vs. Curved Paths</h2>
+                <p>To understand why we need special math for rotation, let's compare it to moving in a straight line. When a particle moves at a constant speed in a straight line, its velocity never changes—both its speed and its direction stay exactly the same.</p>
+                
+                <p>However, when a particle moves at a constant speed in a circle, something is always changing. Even though its distance from the center stays the same, and its speedometer reading never changes, its <em>direction</em> is constantly shifting. Because the direction changes, we can't just use simple numbers; we need to use vectors, and we need a way to mathematically talk about a "changing direction."</p>
+                
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 1.1:</span> Comparing straight line motion to circular motion. 
+                        <div class="sim-observe">
+                            <strong>What to Observe:</strong> In the top path, the green velocity vector always points to the right. It's static. In the bottom circular path, the vector must continually rotate to stay on the curve. This constant spinning of direction is what we need to solve mathematically.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-wheel" class="sim-canvas" aria-label="Simulation comparing straight line motion to circular motion" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn" id="btn-wheel-play" aria-pressed="false">Pause/Play</button>
+                        <button class="sim-btn" id="btn-wheel-trace" style="background:#475569;">Toggle Traces</button>
+                    </div>
+                </figure>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Motion vs. Forces</div>
+                    Right now, we are only looking at <em>Kinematics</em>—which is just the math of drawing the motion itself. We aren't worried yet about <em>Dynamics</em>, which is the actual physical forces (like gravity or a string) causing the object to spin. We are just mapping out the geometry.
+                </div>
+            </section>
+
+            <section id="ch2">
+                <h2 class="text-3xl mb-6">2. Choosing the Right Coordinates</h2>
+                <p>The standard Cartesian grid—the \((x,y)\) system you learn in algebra—uses fixed, straight axes. While it's great for straight lines, it makes drawing a circle surprisingly messy. If you want to describe a particle moving in a perfect circle of radius \(r\), the \(x\) and \(y\) coordinates have to constantly wave up and down like this:</p>
+                
+                <div class="math-container">
+                    \[ x(t) = r\cos(\theta(t)), \quad y(t) = r\sin(\theta(t)) \]
+                </div>
+                
+                <p>Moving in a circle is a simple physical idea (just stay the same distance from the center!), but the \((x,y)\) math makes it look complicated. The trick is to change our coordinate system to match the motion. If we use Polar coordinates \((r, \theta)\), we just keep track of the distance from the center (\(r\)) and the angle (\(\theta\)). For a circle, \(r\) is simply a constant number. Much easier!</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 2.1:</span> Finding the right grid for the job.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Click "Switch to Polar Grid". See how the circular path perfectly rests on one of the round grid lines? The Cartesian grid (the squares) forces the curved path to constantly cut across the lines diagonally.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-coords" class="sim-canvas" aria-label="Simulation toggling between Cartesian and Polar coordinate grids" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn" id="btn-coord-toggle">Switch to Polar Grid</button>
+                    </div>
+                </figure>
+            </section>
+
+            <div class="chapter-divider"><span>&#10086;</span></div>
+
+            <section id="ch3">
+                <h2 class="text-3xl mb-6">3. Rotating Basis Vectors</h2>
+                <p>When we use vectors to do math, we rely on "basis vectors"—these are essentially our tiny measuring sticks for direction. In the standard \((x,y)\) system, our measuring sticks \(\hat{i}\) (right) and \(\hat{j}\) (up) are bolted to the background. They never move.</p>
+                
+                <p>But when we use polar coordinates, our measuring sticks ride along with the particle itself:</p>
+                
+                <ul class="space-y-2">
+                    <li>\(\mathbf{u}_r\): The radial vector. It always points directly away from the center, right through the particle.</li>
+                    <li>\(\mathbf{u}_\theta\): The tangential vector. It points 90 degrees ahead of the radial vector, showing which way the particle is swinging.</li>
+                </ul>
+
+                <p>Because these vectors are attached to the particle, they have to rotate as the particle moves around the circle.</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 3.1:</span> Fixed vs. Rotating Measuring Sticks.
+                        <div class="sim-observe">
+                            <strong>What to Observe:</strong> The gray Cartesian vectors in the middle never move. But the red (\(\mathbf{u}_r\)) and blue (\(\mathbf{u}_\theta\)) polar vectors spin right along with the particle, keeping their 90-degree angle to each other.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-basis" class="sim-canvas" aria-label="Simulation showing rotating radial and tangential basis vectors" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn" id="btn-basis-play">Pause/Play</button>
+                    </div>
+                </figure>
+            </section>
+
+            <section id="ch4">
+                <h2 class="text-3xl mb-6">4. The Derivative of a Direction</h2>
+                <p>Since \(\mathbf{u}_r\) and \(\mathbf{u}_\theta\) are spinning, they are changing over time. In calculus, that means they have a derivative. To find the derivative of \(\mathbf{u}_r\), let's look at how the vector changes over a tiny sliver of time \(\Delta t\), during which it rotates by a tiny angle \(\Delta\theta\).</p>
+                
+                <div class="theorem-box">
+                    <div class="theorem-title">The Math of a Changing Vector</div>
+                    If we take the new vector \(\mathbf{u}_r(t + \Delta t)\) and subtract the old vector \(\mathbf{u}_r(t)\), we get the difference, which we call \(\Delta\mathbf{u}_r\). Because both vectors have a length of exactly 1, they form a triangle. Using basic trigonometry, the length of the difference is:
+                    <div class="math-container">
+                        \[ |\Delta\mathbf{u}_r| = 2\sin\left(\frac{\Delta\theta}{2}\right) \]
+                    </div>
+                    When the angle \(\Delta\theta\) becomes extremely small, \(\sin(x)\) is basically just \(x\), which means the length of our difference vector simplifies to just \(|\Delta\mathbf{u}_r| \approx \Delta\theta\).
+                </div>
+
+                <p>What about the <em>direction</em> of this difference? As the angle gets smaller and smaller, the difference vector \(\Delta\mathbf{u}_r\) becomes perfectly perpendicular to \(\mathbf{u}_r\). It points exactly in the \(\mathbf{u}_\theta\) direction!</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 4.1:</span> Visualizing the change in a vector.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Grab the slider and shrink \(\Delta\theta\) down to a very small number. Watch how the blue difference vector (\(\Delta\mathbf{u}_r\)) lines up perfectly with the dotted line (the tangent direction). This proves visually why the change points sideways!
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-delta-u" class="sim-canvas" aria-label="Geometric construction of the change in a unit vector" role="img"></canvas>
+                    <div class="sim-controls">
+                        <label class="font-sans text-sm flex items-center gap-2 font-medium text-gray-700">
+                            Angle \(\Delta \theta\): <input type="range" class="sim-slider" id="slider-delta-theta" min="0.05" max="1.5" step="0.05" value="0.8">
+                        </label>
+                    </div>
+                </figure>
+
+                <p>If we divide by our time step \(\Delta t\), we get our formal derivative. (Note: \(\omega\) is the angular velocity, which just means \(\frac{d\theta}{dt}\)):</p>
+
+                <div class="math-container">
+                    \[ \frac{d\mathbf{u}_r}{dt} = \lim_{\Delta t \to 0} \frac{\Delta\mathbf{u}_r}{\Delta t} = \lim_{\Delta t \to 0} \left( \frac{\Delta\theta}{\Delta t} \right) \mathbf{u}_\theta = \omega \mathbf{u}_\theta \]
+                </div>
+
+                <p>We can use the exact same logic for the tangential vector \(\mathbf{u}_\theta\). Because it is rotated 90 degrees ahead, when it shifts, it actually points inward, directly opposite to the radial vector. That's why it gets a negative sign:</p>
+
+                <div class="math-container">
+                    \[ \frac{d\mathbf{u}_\theta}{dt} = -\omega \mathbf{u}_r \]
+                </div>
+            </section>
+
+            <div class="chapter-divider"><span>&#10086;</span></div>
+
+            <section id="ch5">
+                <h2 class="text-3xl mb-6">5. Why Velocity Points Tangentially</h2>
+                <p>Now that we know how our measuring sticks spin, finding the velocity of the particle is surprisingly easy. First, we write down where the particle is. Its position is just its distance \(r\) in the radial direction:</p>
+                
+                <div class="math-container text-center text-xl text-book-accent">
+                    \[ \mathbf{r} = r\mathbf{u}_r \]
+                </div>
+                
+                <p>Velocity is just the derivative of position. We use the product rule from calculus. Since the particle is moving in a circle, its distance \(r\) never changes, so \(\frac{dr}{dt}\) is just 0.</p>
+
+                <div class="math-container">
+                    \[ \mathbf{v} = \frac{d\mathbf{r}}{dt} = \frac{dr}{dt}\mathbf{u}_r + r\frac{d\mathbf{u}_r}{dt} = 0 + r(\omega \mathbf{u}_\theta) \]
+                </div>
+
+                <p>This gives us \(\mathbf{v} = r\omega\mathbf{u}_\theta\). This math perfectly matches our intuition: the velocity of an object moving in a circle points straight along the edge (tangentially), and its speed is \(r\omega\).</p>
+                
+                <div class="insight-box">
+                    <div class="insight-title">Straight Lines on Curves</div>
+                    This mathematical result shows that if you zoom in close enough to a curve at any specific moment, the particle is basically just trying to travel in a straight line tangent to the circle. 
+                </div>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 5.1:</span> The Velocity Circle (Hodograph).
+                        <div class="sim-observe">
+                            <strong>What to Observe:</strong> On the left, we see the particle moving in space. On the right, we take just the velocity vectors and stick their tails to a center point. Because the velocity vector is smoothly spinning, its tip draws a perfect circle of its own in "velocity space"!
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-hodograph" class="sim-canvas" aria-label="Simulation comparing position space to velocity space (hodograph)" role="img"></canvas>
+                </figure>
+            </section>
+
+            <section id="ch6">
+                <h2 class="text-3xl mb-6">6. Acceleration: Speed vs. Direction</h2>
+                <p>Acceleration is how fast velocity is changing. To find it, we take the derivative of our velocity equation \(\mathbf{v} = r\omega\mathbf{u}_\theta\) using the product rule again. This time, we find that acceleration comes from two completely different things:</p>
+
+                <div class="math-container">
+                    \[ \mathbf{a} = \frac{d\mathbf{v}}{dt} = \frac{d(r\omega)}{dt}\mathbf{u}_\theta + (r\omega)\frac{d\mathbf{u}_\theta}{dt} \]
+                </div>
+
+                <p>Let's swap in \(\alpha\) (angular acceleration) for \(\frac{d\omega}{dt}\), and plug in our spinning vector rule \(\frac{d\mathbf{u}_\theta}{dt} = -\omega\mathbf{u}_r\). We end up with the final equation for acceleration:</p>
+
+                <div class="theorem-box">
+                    <div class="math-container text-center">
+                        \[ \mathbf{a} = r\alpha\mathbf{u}_\theta - r\omega^2\mathbf{u}_r \]
+                    </div>
+                    This splits acceleration into two distinct jobs:
+                    <ul class="mt-4 mb-0 text-sm text-gray-700">
+                        <li><strong>Tangential Acceleration (\(r\alpha\)):</strong> This pushes the particle forward or backward along the curve, acting like the gas pedal or brakes to change its speed.</li>
+                        <li><strong>Centripetal Acceleration (\(-r\omega^2\)):</strong> This points dead-center inward. It doesn't change the speed at all; its only job is to yank the particle sideways to keep bending its path into a circle.</li>
+                    </ul>
+                </div>
+
+                <p>The inward acceleration (\(-r\omega^2\)) is directly tied to the curve of the path. A tighter curve (smaller \(r\)) or a faster speed means you need a much harder inward pull to keep changing direction.</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 6.1:</span> Splitting up acceleration.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Turn up the Angular Acceleration (\(\alpha\)). Watch the orange arrow grow—that's the force speeding the particle up. If you set \(\alpha\) to 0, the only acceleration left is the red arrow pulling inward to maintain the circle.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-accel" class="sim-canvas bg-gray-50" aria-label="Simulation showing tangential and radial components of acceleration" role="img"></canvas>
+                    <div class="sim-controls">
+                        <label class="font-sans text-sm flex items-center gap-2 font-medium text-gray-700">
+                            Speed up/down (\(\alpha\)): <input type="range" class="sim-slider" id="slider-accel-alpha" min="-2" max="2" step="0.1" value="0.5">
+                        </label>
+                    </div>
+                </figure>
+            </section>
+
+            <div class="chapter-divider"><span>&#10086;</span></div>
+
+            <section id="ch7">
+                <h2 class="text-3xl mb-6">7. Using Cross Products for 3D</h2>
+                <p>Everything we've done so far is in a flat 2D plane. To step up to 3D motion, physicists use the vector cross product. We take the spinning speed \(\omega\) and turn it into a 3D vector \(\boldsymbol{\omega}\) that points straight up out of the spinning plane (using the right-hand rule).</p>
+                
+                <p>There is a neat mathematical trick: taking the derivative of any spinning vector \(\mathbf{A}\) is the same as just crossing it with \(\boldsymbol{\omega}\):</p>
+                <div class="math-container">
+                    \[ \frac{d\mathbf{A}}{dt} = \boldsymbol{\omega} \times \mathbf{A} \]
+                </div>
+
+                <p>If we apply this cross product to the position vector, we get the velocity: \(\mathbf{v} = \boldsymbol{\omega} \times \mathbf{r}\). This trick saves us from having to manually track our local basis vectors; the cross product math handles all the 3D geometry for us automatically.</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 7.1:</span> The 3D Cross Product.
+                        <div class="sim-observe">
+                            <strong>What to Observe:</strong> The angular velocity vector \(\boldsymbol{\omega}\) (purple) lives on the Z-axis, pointing entirely out of the plane of rotation. Crossing it with the position vector \(\mathbf{r}\) (red) mathematically guarantees that the resulting velocity \(\mathbf{v}\) (green) points tangentially.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-cross" class="sim-canvas bg-gray-900" aria-label="3D Isometric simulation of cross products" role="img"></canvas>
+                </figure>
+            </section>
+
+            <section id="ch8">
+                <h2 class="text-3xl mb-6">8. The Magic of Complex Numbers</h2>
+                <p>If we stay in 2D, there is another incredibly elegant way to do this using imaginary numbers. Using Euler's formula, we can represent a point on a circle as a complex number \(z\):</p>
+                
+                <div class="math-container">
+                    \[ z = r e^{i\theta} \]
+                </div>
+
+                <p>The \(e^{i\theta}\) part perfectly replaces our radial vector \(\mathbf{u}_r\). Because taking derivatives of 'e' is very easy in calculus, we can find velocity just by using the chain rule (assuming uniform speed):</p>
+
+                <div class="math-container">
+                    \[ v = \frac{dz}{dt} = r \left( i \frac{d\theta}{dt} e^{i\theta} \right) = i\omega r e^{i\theta} \]
+                </div>
+
+                <p>In the math of complex numbers, multiplying by \(i\) means "rotate exactly 90 degrees counter-clockwise." So, the \(i\) in this formula automatically rotates our vector from pointing outward to pointing sideways (tangentially). It's built right in!</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 8.1:</span> Rotations in the Complex Plane.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Click the buttons below to switch between Position (\(z\)), Velocity (\(v = iz\)), and Acceleration (\(a = i^2z = -z\)). Notice how each mathematical derivative simply multiplies the vector by \(i\), which visually snaps the vector exactly 90 degrees forward!
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-complex" class="sim-canvas" aria-label="Complex plane rotation simulation" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn sim-btn-active-state" id="btn-cplx-pos">Position (z)</button>
+                        <button class="sim-btn" id="btn-cplx-vel">Multiply by i (Velocity)</button>
+                        <button class="sim-btn" id="btn-cplx-acc">Multiply by i² (Accel)</button>
+                    </div>
+                </figure>
+
+                <p>If we take the derivative one more time to find acceleration, we get an \(i^2\):</p>
+                <div class="math-container">
+                    \[ a = \frac{dv}{dt} = i\omega r \left( i\omega e^{i\theta} \right) = i^2 \omega^2 r e^{i\theta} = -\omega^2 r e^{i\theta} \]
+                </div>
+                
+                <p>Since everyone knows that \(i^2 = -1\), the math magically spits out a negative sign, proving that the acceleration points directly inward towards the center. Complex numbers handle the rotation geometry effortlessly.</p>
+            </section>
+
+            <section id="ch9">
+                <h2 class="text-3xl mb-6">9. Rotating Frames & Apparent Forces</h2>
+                <p>Why does all of this rotating vector math matter so much? Because we live on a rotating planet. Whenever you measure something from the surface of the Earth, you are standing inside a rotating coordinate system.</p>
+                
+                <p>When you do math from the perspective of a spinning room, the changing vectors make it look like invisible forces are pushing objects sideways. These are called "fictitious" or "apparent" forces—the most famous being the Coriolis force. They aren't real pushes or pulls; they are just what happens when the grid you are standing on rotates beneath an object trying to move in a straight line.</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure 9.1:</span> The Coriolis Effect in action.
+                        <div class="sim-observe">
+                            <strong>Try This:</strong> Click "Release Particle" while watching the Absolute Frame. It moves in a boring straight line. Now, switch to the Rotating Frame and throw it again. To the spinning camera, the ball seems to curve dramatically! The geometry of the observer changes the rules of the game.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-coriolis" class="sim-canvas bg-gray-900" aria-label="Simulation comparing absolute and rotating frames of reference" role="img"></canvas>
+                    <div class="sim-controls">
+                        <button class="sim-btn" id="btn-coriolis-frame">View: Absolute Frame</button>
+                        <button class="sim-btn" id="btn-coriolis-throw" style="background:#475569;">Release Particle</button>
+                    </div>
+                </figure>
+            </section>
+
+            <div class="chapter-divider"><span>&#10086;</span></div>
+
+            <section id="ch10">
+                <h2 class="text-3xl mb-6">10. Summary of the Math</h2>
+                <p>Here is a cheat sheet showing how we get from position to acceleration using the three different methods we've explored: Polar coordinates, 3D Cross Products, and Complex Numbers.</p>
+                
+                <div class="dependency-flow font-mono text-sm text-book-accent mb-4">
+                    <div>POSITION \(\mathbf{r}\)</div>
+                    <div class="flow-arrow">&#8595; <span class="text-xs font-sans text-gray-400 font-normal">take derivative</span></div>
+                    <div>VELOCITY \(\mathbf{v}\)</div>
+                    <div class="flow-arrow">&#8595; <span class="text-xs font-sans text-gray-400 font-normal">take derivative</span></div>
+                    <div>ACCELERATION \(\mathbf{a}\)</div>
+                </div>
+
+                <div class="overflow-x-auto border border-book-border rounded-lg shadow-sm bg-white mb-12">
+                    <table class="comparison-table mt-0 mb-0">
+                        <thead>
+                            <tr>
+                                <th>Quantity</th>
+                                <th>Polar (Rotating Basis)</th>
+                                <th>3D Vector (Cross Product)</th>
+                                <th>Complex Numbers</th>
+                            </tr>
+                        </thead>
+                        <tbody class="font-sans">
+                            <tr>
+                                <td class="font-semibold text-gray-700">Position</td>
+                                <td>\(\mathbf{r} = r\mathbf{u}_r\)</td>
+                                <td>\(\mathbf{r}\)</td>
+                                <td>\(z = re^{i\theta}\)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-700">Velocity</td>
+                                <td>\(\mathbf{v} = r\omega\mathbf{u}_\theta\)</td>
+                                <td>\(\mathbf{v} = \boldsymbol{\omega} \times \mathbf{r}\)</td>
+                                <td>\(v = i\omega r e^{i\theta}\)</td>
+                            </tr>
+                            <tr>
+                                <td class="font-semibold text-gray-700">Acceleration</td>
+                                <td>\(\mathbf{a} = r\alpha\mathbf{u}_\theta - r\omega^2\mathbf{u}_r\)</td>
+                                <td>\(\mathbf{a} = \boldsymbol{\alpha} \times \mathbf{r} + \boldsymbol{\omega} \times \mathbf{v}\)</td>
+                                <td>\(a = (\alpha i - \omega^2)re^{i\theta}\)</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section id="conclusion" class="mt-16 py-8 border-t border-b border-book-border">
+                <h2 class="text-3xl mb-6">Conclusion</h2>
+                <p>The math behind moving in a circle is a huge stepping stone in physics. It forces us to stop using fixed grids and start using coordinates that adapt and spin along with the object we are measuring. By understanding how a simple unit vector rotates, we unlock the math needed to handle much bigger concepts.</p>
+                <p>Whether you use polar coordinates, cross products, or complex numbers, the big takeaway is the same: the coordinate space itself is dynamic. Once you are comfortable with geometry that changes and spins, you are ready to tackle everything from the chaotic spins of a gyroscope to the curving fabric of space-time.</p>
+            </section>
+
+            <section id="appendix" class="mt-16 mb-16">
+                <h2 class="text-2xl font-bold mb-6 text-gray-500">Appendix: The Center of Mass</h2>
+                <p>While this guide has focused on tracking a single particle, a similar shift in thinking happens when we look at multiple objects orbiting each other. Instead of measuring from a random static point, the math gets much easier if we measure everything from the system's natural balancing point: the center of mass (or barycenter).</p>
+
+                <figure class="simulation-container">
+                    <figcaption class="mb-4 mt-0 border-t-0 pt-0">
+                        <span class="fig-number">Figure A.1:</span> The Barycenter as a natural origin.
+                        <div class="sim-observe">
+                            <strong>What to Observe:</strong> Slide the Mass Ratio back and forth. Watch how the two objects perfectly organize their orbit around the green cross. Nature always finds its own perfect center, regardless of where we draw our grid.
+                        </div>
+                    </figcaption>
+                    <canvas id="sim-com" class="sim-canvas" aria-label="Interactive binary star system simulation" role="img"></canvas>
+                    <div class="sim-controls">
+                        <label class="font-sans text-sm flex items-center gap-2 font-medium text-gray-700">
+                            Mass Ratio (\(m_1/m_2\)): <input type="range" class="sim-slider" id="slider-com-ratio" min="0.1" max="10" step="0.1" value="1">
+                        </label>
+                    </div>
+                </figure>
+            </section>
+
+        </article>
+    </main>
+</div>
+
+<script>
+    // --- Mobile UI & Navigation Logic ---
+    const sidebar = document.getElementById('sidebar');
+    const overlay = document.getElementById('mobile-overlay');
+    
+    function toggleMenu() {
+        sidebar.classList.toggle('open');
+        overlay.classList.toggle('active');
+    }
+    
+    document.getElementById('mobile-menu-btn').addEventListener('click', toggleMenu);
+    overlay.addEventListener('click', toggleMenu);
+
+    document.querySelectorAll('.nav-link').forEach(link => {
+        link.addEventListener('click', () => {
+            if (window.innerWidth < 1024) {
+                toggleMenu();
+            }
+        });
+    });
+
+    // --- Fixed-Resolution Canvas Engine ---
+    // Instead of dynamically resizing the canvas drawing buffer (which causes clipping and layout bugs on resize),
+    // we set a fixed internal HD resolution of 800x400. CSS scales it proportionally for all devices.
+    function initCanvas(canvasId, setupFn) {
+        const canvas = document.getElementById(canvasId);
+        if (!canvas) return;
+        
+        // Fixed internal rendering resolution ensures no clipping bugs
+        canvas.width = 800;
+        canvas.height = 400;
+        const ctx = canvas.getContext('2d', { alpha: false }); 
+
+        // IntersectionObserver pauses rendering when canvas is scrolled off-screen
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                canvas.dataset.visible = entry.isIntersecting ? 'true' : 'false';
+            });
+        }, { threshold: 0.1 });
+        observer.observe(canvas);
+        
+        canvas.dataset.visible = 'true'; 
+        setupFn(canvas, ctx);
+    }
+
+    // --- Sim 0: Rotating Sky ---
+    initCanvas('sim-sky', (canvas, ctx) => {
+        let isPlaying = true; let speed = 1; let angle = 0;
+        const stars = [];
+        for(let i=0; i<250; i++) {
+            stars.push({
+                r: Math.random() * 500 + 10, theta: Math.random() * Math.PI * 2,
+                size: Math.random() * 1.8, alpha: Math.random() * 0.6 + 0.4
+            });
+        }
+        document.getElementById('btn-sky-play').addEventListener('click', () => isPlaying = !isPlaying);
+        document.getElementById('slider-sky-speed').addEventListener('input', (e) => speed = parseFloat(e.target.value));
+
+        let isDragging = false; let lastX = 0;
+        const startDrag = (x) => { isDragging = true; lastX = x; };
+        const endDrag = () => { isDragging = false; };
+        const onDrag = (x) => { if(isDragging) { angle += (x - lastX) * 0.01; lastX = x; } };
+
+        canvas.addEventListener('mousedown', e => startDrag(e.clientX));
+        canvas.addEventListener('mouseup', endDrag); canvas.addEventListener('mouseleave', endDrag);
+        canvas.addEventListener('mousemove', e => onDrag(e.clientX));
+        canvas.addEventListener('touchstart', e => startDrag(e.touches[0].clientX), {passive: true});
+        canvas.addEventListener('touchend', endDrag);
+        canvas.addEventListener('touchmove', e => { onDrag(e.touches[0].clientX); e.preventDefault(); }, {passive: false});
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                const cx = canvas.width / 2; const cy = canvas.height / 2;
+                const grad = ctx.createRadialGradient(cx, cy, 0, cx, cy, 600);
+                grad.addColorStop(0, '#0f172a'); grad.addColorStop(1, '#020617');
+                ctx.fillStyle = grad; ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx, cy, 2, 0, Math.PI*2); ctx.fill();
+                if (isPlaying) angle -= 0.005 * speed;
+
+                ctx.save(); ctx.translate(cx, cy); ctx.rotate(angle);
+                stars.forEach(star => {
+                    const x = star.r * Math.cos(star.theta); const y = star.r * Math.sin(star.theta);
+                    ctx.fillStyle = `rgba(255, 255, 255, ${star.alpha})`;
+                    ctx.beginPath(); ctx.arc(x, y, star.size, 0, Math.PI*2); ctx.fill();
+                    if(isPlaying && speed > 0.5) {
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${star.alpha * 0.15})`; ctx.lineWidth = star.size;
+                        ctx.beginPath(); ctx.arc(0, 0, star.r, star.theta, star.theta + 0.08*speed); ctx.stroke();
+                    }
+                });
+                ctx.restore();
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 1: Linear vs Circular ---
+    initCanvas('sim-wheel', (canvas, ctx) => {
+        let isPlaying = true;
+        let time = 0;
+        let showTraces = true;
+
+        document.getElementById('btn-wheel-play').addEventListener('click', () => isPlaying = !isPlaying);
+        document.getElementById('btn-wheel-trace').addEventListener('click', () => showTraces = !showTraces);
+
+        function drawArrow(x, y, angle, length, color) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 12, -6); ctx.lineTo(length - 12, 6); ctx.fill();
+            ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                if(isPlaying) time += 0.02;
+
+                const linearX = (time * 150) % (canvas.width * 0.8) + (canvas.width * 0.1);
+                const linearY = canvas.height * 0.25;
+
+                if(showTraces) {
+                    ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(canvas.width * 0.1, linearY); ctx.lineTo(canvas.width * 0.9, linearY); ctx.stroke();
+                }
+
+                ctx.fillStyle = '#334155';
+                ctx.beginPath(); ctx.arc(linearX, linearY, 8, 0, Math.PI*2); ctx.fill();
+                drawArrow(linearX, linearY, 0, 50, '#10b981');
+
+                const cx = canvas.width / 2; const cy = canvas.height * 0.7; const radius = 80;
+                const circX = cx + radius * Math.cos(time * 2); const circY = cy + radius * Math.sin(time * 2);
+
+                if(showTraces) {
+                    ctx.strokeStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+                    ctx.strokeStyle = '#f1f5f9';
+                    for(let i=0; i<4; i++) {
+                        ctx.beginPath(); ctx.moveTo(cx, cy);
+                        ctx.lineTo(cx + radius * Math.cos(time*2 + i*Math.PI/2), cy + radius * Math.sin(time*2 + i*Math.PI/2)); ctx.stroke();
+                    }
+                }
+
+                ctx.fillStyle = '#334155';
+                ctx.beginPath(); ctx.arc(circX, circY, 8, 0, Math.PI*2); ctx.fill();
+                drawArrow(circX, circY, time * 2 + Math.PI/2, 50, '#10b981');
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 2: Cartesian vs Polar ---
+    initCanvas('sim-coords', (canvas, ctx) => {
+        let mode = 'cartesian'; 
+        let time = 0;
+        const btn = document.getElementById('btn-coord-toggle');
+        
+        btn.addEventListener('click', () => {
+            mode = mode === 'cartesian' ? 'polar' : 'cartesian';
+            btn.innerText = mode === 'cartesian' ? 'Switch to Polar Grid' : 'Switch to Cartesian Grid';
+        });
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                const cx = canvas.width / 2; const cy = canvas.height / 2;
+                const radius = 120;
+                time += 0.015;
+
+                const px = cx + radius * Math.cos(time); const py = cy + radius * Math.sin(time);
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 1;
+
+                if (mode === 'cartesian') {
+                    const step = 40; ctx.beginPath();
+                    for(let x = cx % step; x < canvas.width; x += step) { ctx.moveTo(x, 0); ctx.lineTo(x, canvas.height); }
+                    for(let y = cy % step; y < canvas.height; y += step) { ctx.moveTo(0, y); ctx.lineTo(canvas.width, y); }
+                    ctx.stroke();
+
+                    ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath();
+                    ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
+
+                    ctx.strokeStyle = 'rgba(122, 32, 32, 0.4)'; ctx.setLineDash([5, 5]);
+                    ctx.beginPath(); ctx.moveTo(cx, py); ctx.lineTo(px, py); ctx.moveTo(px, cy); ctx.lineTo(px, py); ctx.stroke(); ctx.setLineDash([]);
+                } else {
+                    ctx.beginPath();
+                    for(let r = 40; r < Math.max(canvas.width, canvas.height); r += 40) { ctx.arc(cx, cy, r, 0, Math.PI*2); } ctx.stroke();
+                    ctx.beginPath();
+                    for(let a = 0; a < Math.PI*2; a += Math.PI/6) { ctx.moveTo(cx, cy); ctx.lineTo(cx + 1000*Math.cos(a), cy + 1000*Math.sin(a)); } ctx.stroke();
+                    ctx.strokeStyle = 'rgba(122, 32, 32, 0.4)'; ctx.lineWidth = 3;
+                    ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+                }
+
+                ctx.strokeStyle = '#3b82f6'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI*2); ctx.fill();
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 3: Rotating Basis ---
+    initCanvas('sim-basis', (canvas, ctx) => {
+        let time = 0; let isPlaying = true;
+        document.getElementById('btn-basis-play').addEventListener('click', () => isPlaying = !isPlaying);
+
+        function drawArrow(x, y, angle, length, color, label) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 12, -6); ctx.lineTo(length - 12, 6); ctx.fill();
+            ctx.font = 'bold 20px serif'; ctx.fillText(label, length + 8, 6); ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const cx = canvas.width / 2; const cy = canvas.height / 2;
+                const radius = 120;
+                if(isPlaying) time += 0.012;
+
+                drawArrow(cx, cy, 0, 70, '#cbd5e1', 'î');
+                drawArrow(cx, cy, -Math.PI/2, 70, '#cbd5e1', 'ĵ');
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+
+                const px = cx + radius * Math.cos(time); const py = cy + radius * Math.sin(time);
+                ctx.strokeStyle = '#e2e8f0'; ctx.beginPath(); ctx.moveTo(cx, cy); ctx.lineTo(px, py); ctx.stroke();
+                ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(px, py, 8, 0, Math.PI*2); ctx.fill();
+
+                drawArrow(px, py, time, 90, '#ef4444', 'u_r');
+                drawArrow(px, py, time + Math.PI/2, 90, '#3b82f6', 'u_θ');
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 4: Delta U Geometry ---
+    initCanvas('sim-delta-u', (canvas, ctx) => {
+        let deltaTheta = 0.8;
+        document.getElementById('slider-delta-theta').addEventListener('input', (e) => deltaTheta = parseFloat(e.target.value));
+
+        function drawArrow(x, y, angle, length, color, label, bold=false) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = bold ? 4 : 2;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 14, -7); ctx.lineTo(length - 14, 7); ctx.fill();
+            ctx.translate(length + 10, 0); ctx.rotate(-angle);
+            ctx.font = 'italic 18px serif'; ctx.fillText(label, 0, 5); ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const cx = canvas.width * 0.35; const cy = canvas.height * 0.75;
+                const radius = 250; 
+                const baseAngle = -Math.PI / 4; 
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(cx, cy, radius, baseAngle - 0.5, baseAngle + 1.5); ctx.stroke();
+                
+                ctx.fillStyle = 'rgba(239, 68, 68, 0.1)'; ctx.beginPath(); ctx.moveTo(cx, cy);
+                ctx.arc(cx, cy, 60, baseAngle, baseAngle + deltaTheta); ctx.fill();
+                ctx.fillStyle = '#64748b'; ctx.font = '18px Inter';
+                ctx.fillText("Δθ", cx + 75*Math.cos(baseAngle + deltaTheta/2), cy + 75*Math.sin(baseAngle + deltaTheta/2));
+
+                drawArrow(cx, cy, baseAngle, radius, '#ef4444', 'u_r(t)', true);
+                drawArrow(cx, cy, baseAngle + deltaTheta, radius, '#991b1b', 'u_r(t+Δt)', true);
+
+                const tip1X = cx + radius * Math.cos(baseAngle); const tip1Y = cy + radius * Math.sin(baseAngle);
+                const tip2X = cx + radius * Math.cos(baseAngle + deltaTheta); const tip2Y = cy + radius * Math.sin(baseAngle + deltaTheta);
+                
+                const deltaAngle = Math.atan2(tip2Y - tip1Y, tip2X - tip1X);
+                const deltaLength = Math.hypot(tip2X - tip1X, tip2Y - tip1Y);
+                
+                ctx.save(); ctx.translate(tip1X, tip1Y); ctx.rotate(deltaAngle);
+                ctx.strokeStyle = '#3b82f6'; ctx.fillStyle = '#3b82f6'; ctx.lineWidth = 4;
+                ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(deltaLength, 0); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(deltaLength, 0); ctx.lineTo(deltaLength - 14, -7); ctx.lineTo(deltaLength - 14, 7); ctx.fill();
+                ctx.translate(deltaLength / 2, -15); ctx.rotate(-deltaAngle);
+                ctx.font = 'bold italic 20px serif'; ctx.fillText("Δu_r", -20, 0); ctx.restore();
+
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(tip1X - 50*Math.cos(baseAngle + Math.PI/2), tip1Y - 50*Math.sin(baseAngle + Math.PI/2));
+                ctx.lineTo(tip1X + 350*Math.cos(baseAngle + Math.PI/2), tip1Y + 350*Math.sin(baseAngle + Math.PI/2)); ctx.stroke();
+                ctx.setLineDash([]);
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 5: Hodograph ---
+    initCanvas('sim-hodograph', (canvas, ctx) => {
+        let time = 0;
+        function drawArrow(x, y, angle, length, color, label) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 12, -6); ctx.lineTo(length - 12, 6); ctx.fill();
+            if(label) { ctx.translate(length + 15, 0); ctx.rotate(-angle); ctx.font = 'bold 18px Inter'; ctx.fillText(label, -5, 6); }
+            ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                time += 0.015;
+                
+                // Fixed internal dimensions guarantee this layout never breaks or overlaps
+                const cx1 = canvas.width * 0.25; const cy1 = canvas.height * 0.55;
+                const cx2 = canvas.width * 0.75; const cy2 = canvas.height * 0.55;
+                const radius = 100;
+
+                ctx.fillStyle = '#475569'; ctx.font = '600 16px Inter'; ctx.textAlign = 'center';
+                ctx.fillText("Position Space", cx1, cy1 - radius - 30);
+                ctx.fillText("Velocity Space", cx2, cy2 - radius - 30);
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(cx1, cy1, radius, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx2, cy2, radius, 0, Math.PI*2); ctx.stroke();
+                
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(cx2-radius-30, cy2); ctx.lineTo(cx2+radius+30, cy2);
+                ctx.moveTo(cx2, cy2-radius-30); ctx.lineTo(cx2, cy2+radius+30); ctx.stroke();
+                ctx.fillStyle = '#94a3b8'; ctx.font = '14px Inter'; ctx.fillText("(0,0)", cx2 - 25, cy2 + 20);
+
+                const angle = time * 1.5;
+                const p1x = cx1 + radius * Math.cos(angle); const p1y = cy1 + radius * Math.sin(angle);
+                
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth=2;
+                ctx.beginPath(); ctx.moveTo(cx1,cy1); ctx.lineTo(p1x,p1y); ctx.stroke();
+                ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(p1x, p1y, 7, 0, Math.PI*2); ctx.fill();
+
+                const tangAngle = angle + Math.PI/2;
+                drawArrow(p1x, p1y, tangAngle, radius, '#10b981', 'v');
+                drawArrow(cx2, cy2, tangAngle, radius, '#10b981', 'v');
+                
+                const p2x = cx2 + radius * Math.cos(tangAngle); const p2y = cy2 + radius * Math.sin(tangAngle);
+                ctx.fillStyle = '#10b981'; ctx.beginPath(); ctx.arc(p2x, p2y, 5, 0, Math.PI*2); ctx.fill();
+
+                ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)'; ctx.setLineDash([6, 6]); ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(p1x, p1y); ctx.lineTo(cx2, cy2); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(p1x + radius * Math.cos(tangAngle), p1y + radius * Math.sin(tangAngle)); ctx.lineTo(p2x, p2y); ctx.stroke();
+                ctx.setLineDash([]);
+                
+                ctx.textAlign = 'left';
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 6: Acceleration ---
+    initCanvas('sim-accel', (canvas, ctx) => {
+        let angle = 0; let omegaInput = 1.5; let alphaInput = 0.5; let currentOmega = 1.5;
+        const alphaSlider = document.getElementById('slider-accel-alpha');
+        if (alphaSlider) {
+            alphaSlider.addEventListener('input', (e) => alphaInput = parseFloat(e.target.value));
+        }
+
+        function drawArrow(x, y, angle, length, color, label, bold=false) {
+            if(Math.abs(length) < 0.1) return;
+            if(length < 0) { length = Math.abs(length); angle += Math.PI; }
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = bold ? 4 : 2;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 12, -6); ctx.lineTo(length - 12, 6); ctx.fill();
+            ctx.translate(length + 15, 0); ctx.rotate(-angle);
+            ctx.font = 'bold 16px Inter'; ctx.fillText(label, -5, 6); ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#f8fafc'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                const dt = 0.016; currentOmega += alphaInput * dt;
+                if(alphaInput > 0 && currentOmega > 3) currentOmega = 3;
+                if(alphaInput < 0 && currentOmega < -3) currentOmega = -3;
+                currentOmega = currentOmega * 0.99; 
+                angle += currentOmega * dt;
+
+                const cx = canvas.width / 2; const cy = canvas.height / 2; const radius = 130;
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+
+                const px = cx + radius * Math.cos(angle); const py = cy + radius * Math.sin(angle);
+                ctx.fillStyle = '#334155'; ctx.beginPath(); ctx.arc(px, py, 7, 0, Math.PI*2); ctx.fill();
+
+                const scaleVel = 25; const scaleAcc = 12;
+                const vMag = currentOmega * scaleVel;
+                const aRadMag = (currentOmega * currentOmega) * scaleAcc; 
+                const aTanMag = alphaInput * scaleAcc * 4; 
+                const tangAngle = angle + Math.PI/2; const radAngle = angle + Math.PI;
+
+                drawArrow(px, py, tangAngle, vMag, 'rgba(16, 185, 129, 0.4)', 'v');
+                drawArrow(px, py, tangAngle, aTanMag, '#f59e0b', 'a_t', true);
+                drawArrow(px, py, radAngle, aRadMag, '#ef4444', 'a_c', true);
+
+                const aTotalX = aTanMag * Math.cos(tangAngle) + aRadMag * Math.cos(radAngle);
+                const aTotalY = aTanMag * Math.sin(tangAngle) + aRadMag * Math.sin(radAngle);
+                const aTotalMag = Math.hypot(aTotalX, aTotalY);
+                const aTotalAngle = Math.atan2(aTotalY, aTotalX);
+                
+                ctx.strokeStyle = 'rgba(139, 92, 246, 0.4)'; ctx.setLineDash([5, 5]); ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(px + aTanMag * Math.cos(tangAngle), py + aTanMag * Math.sin(tangAngle)); ctx.lineTo(px + aTotalX, py + aTotalY);
+                ctx.moveTo(px + aRadMag * Math.cos(radAngle), py + aRadMag * Math.sin(radAngle)); ctx.lineTo(px + aTotalX, py + aTotalY); ctx.stroke(); ctx.setLineDash([]);
+                drawArrow(px, py, aTotalAngle, aTotalMag, '#8b5cf6', 'a', true);
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 7: Cross Product (NEW) ---
+    initCanvas('sim-cross', (canvas, ctx) => {
+        let time = 0;
+        
+        // Simple pseudo-3D isometric projection
+        function project(x, y, z) {
+            const angle = Math.PI / 6; // Isometric pitch
+            const px = (x - y) * Math.cos(angle);
+            const py = (x + y) * Math.sin(angle) - z;
+            return { x: px + canvas.width / 2, y: py + canvas.height * 0.65 };
+        }
+
+        function draw3DArrow(startX, startY, startZ, vecX, vecY, vecZ, color, label) {
+            const p1 = project(startX, startY, startZ);
+            const p2 = project(startX + vecX, startY + vecY, startZ + vecZ);
+            
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 3;
+            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
+            
+            // Draw arrowhead flat on screen
+            const screenAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+            ctx.save(); ctx.translate(p2.x, p2.y); ctx.rotate(screenAngle);
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(-12, -6); ctx.lineTo(-12, 6); ctx.fill();
+            ctx.restore();
+            
+            if(label) {
+                ctx.font = 'bold 16px Inter';
+                ctx.fillText(label, p2.x + 10, p2.y);
+            }
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                time += 0.02;
+
+                const radius = 120;
+                
+                // Draw 3D axes faint
+                draw3DArrow(0,0,0, 180,0,0, '#334155', 'x');
+                draw3DArrow(0,0,0, 0,180,0, '#334155', 'y');
+
+                // Draw orbital path
+                ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+                ctx.beginPath();
+                for(let a=0; a<=Math.PI*2; a+=0.1) {
+                    const p = project(radius*Math.cos(a), radius*Math.sin(a), 0);
+                    if(a===0) ctx.moveTo(p.x, p.y); else ctx.lineTo(p.x, p.y);
+                }
+                ctx.stroke();
+
+                // Calculate positions
+                const rx = radius * Math.cos(time);
+                const ry = radius * Math.sin(time);
+                
+                const omegaZ = 120; // Omega pointing straight up
+                const vx = -ry * (omegaZ/radius); // cross product v = omega x r
+                const vy = rx * (omegaZ/radius);
+
+                // Draw vectors
+                draw3DArrow(0, 0, 0, 0, 0, omegaZ, '#a855f7', 'ω');
+                draw3DArrow(0, 0, 0, rx, ry, 0, '#ef4444', 'r');
+                draw3DArrow(rx, ry, 0, vx, vy, 0, '#10b981', 'v');
+
+                // Particle
+                const part = project(rx, ry, 0);
+                ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(part.x, part.y, 6, 0, Math.PI*2); ctx.fill();
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 8: Complex Plane (NEW) ---
+    initCanvas('sim-complex', (canvas, ctx) => {
+        let time = 0;
+        let activeVector = 'pos'; // pos, vel, acc
+        let targetRotationOffset = 0;
+        let currentRotationOffset = 0;
+
+        document.getElementById('btn-cplx-pos').addEventListener('click', (e) => { 
+            activeVector = 'pos'; targetRotationOffset = 0; updateBtns(e.target); 
+        });
+        document.getElementById('btn-cplx-vel').addEventListener('click', (e) => { 
+            activeVector = 'vel'; targetRotationOffset = Math.PI/2; updateBtns(e.target); 
+        });
+        document.getElementById('btn-cplx-acc').addEventListener('click', (e) => { 
+            activeVector = 'acc'; targetRotationOffset = Math.PI; updateBtns(e.target); 
+        });
+
+        function updateBtns(activeBtn) {
+            document.querySelectorAll('#sim-complex ~ .sim-controls .sim-btn').forEach(btn => btn.classList.remove('sim-btn-active-state'));
+            activeBtn.classList.add('sim-btn-active-state');
+        }
+
+        function drawArrow(x, y, angle, length, color, label) {
+            ctx.save(); ctx.translate(x, y); ctx.rotate(angle);
+            ctx.strokeStyle = color; ctx.fillStyle = color; ctx.lineWidth = 4;
+            ctx.beginPath(); ctx.moveTo(0, 0); ctx.lineTo(length, 0); ctx.stroke();
+            ctx.beginPath(); ctx.moveTo(length, 0); ctx.lineTo(length - 14, -7); ctx.lineTo(length - 14, 7); ctx.fill();
+            ctx.translate(length + 15, 0); ctx.rotate(-angle);
+            ctx.font = 'bold 18px Inter'; ctx.fillText(label, -5, 6); ctx.restore();
+        }
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                time += 0.01;
+
+                // Smoothly animate the 90-degree rotations
+                currentRotationOffset += (targetRotationOffset - currentRotationOffset) * 0.1;
+
+                const cx = canvas.width / 2; const cy = canvas.height / 2; const radius = 120;
+                
+                // Draw Complex Axes
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.moveTo(0, cy); ctx.lineTo(canvas.width, cy); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(cx, 0); ctx.lineTo(cx, canvas.height); ctx.stroke();
+                
+                ctx.fillStyle = '#94a3b8'; ctx.font = '14px Inter';
+                ctx.fillText("Real (Re)", canvas.width - 70, cy - 10);
+                ctx.fillText("Imaginary (Im)", cx + 10, 20);
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.beginPath(); ctx.arc(cx, cy, radius, 0, Math.PI*2); ctx.stroke();
+
+                const baseAngle = time;
+                const finalAngle = baseAngle + currentRotationOffset;
+                
+                // Determine styling based on state
+                let color = '#ef4444'; let label = 'z';
+                if(targetRotationOffset > 1) { color = '#10b981'; label = 'v = iz'; }
+                if(targetRotationOffset > 2) { color = '#f59e0b'; label = 'a = i²z'; }
+
+                // Draw base position ghost
+                if(targetRotationOffset > 0.1) {
+                    drawArrow(cx, cy, baseAngle, radius, 'rgba(239, 68, 68, 0.2)', 'z (Ghost)');
+                }
+
+                drawArrow(cx, cy, finalAngle, radius, color, label);
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 9: Coriolis ---
+    initCanvas('sim-coriolis', (canvas, ctx) => {
+        let frame = 'absolute'; let ballActive = false; let ballT = 0; 
+        const omega = 0.02; const v = 2; let diskAngle = 0;
+        const btnFrame = document.getElementById('btn-coriolis-frame');
+        
+        btnFrame.addEventListener('click', () => {
+            frame = frame === 'absolute' ? 'rotating' : 'absolute';
+            btnFrame.innerText = frame === 'absolute' ? 'View: Absolute Frame' : 'View: Rotating Frame';
+        });
+
+        document.getElementById('btn-coriolis-throw').addEventListener('click', () => { ballActive = true; ballT = 0; });
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#111827'; ctx.fillRect(0, 0, canvas.width, canvas.height); 
+                const cx = canvas.width / 2; const cy = canvas.height / 2; const rDisk = Math.min(cx, cy) * 0.9;
+                diskAngle += omega;
+
+                ctx.save(); ctx.translate(cx, cy);
+                if (frame === 'rotating') {
+                    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, 0, rDisk, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(-rDisk, 0); ctx.lineTo(rDisk, 0); ctx.moveTo(0, -rDisk); ctx.lineTo(0, rDisk); ctx.stroke();
+
+                    if (ballActive) {
+                        ballT += 1; const r = v * ballT; const thetaRel = -omega * ballT;
+                        const bx = r * Math.cos(thetaRel); const by = r * Math.sin(thetaRel);
+                        
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0,0);
+                        for(let t=0; t<=ballT; t++) { ctx.lineTo(v*t*Math.cos(-omega*t), v*t*Math.sin(-omega*t)); } ctx.stroke();
+                        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI*2); ctx.fill();
+                        if(r > rDisk) ballActive = false; 
+                    }
+                } else {
+                    ctx.save(); ctx.rotate(diskAngle);
+                    ctx.fillStyle = '#1e293b'; ctx.beginPath(); ctx.arc(0, 0, rDisk, 0, Math.PI*2); ctx.fill();
+                    ctx.strokeStyle = '#334155'; ctx.lineWidth = 2;
+                    ctx.beginPath(); ctx.moveTo(-rDisk, 0); ctx.lineTo(rDisk, 0); ctx.moveTo(0, -rDisk); ctx.lineTo(0, rDisk); ctx.stroke(); ctx.restore();
+
+                    if (ballActive) {
+                        ballT += 1; const r = v * ballT; const bx = r; const by = 0;
+                        ctx.strokeStyle = '#ef4444'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(0,0); ctx.lineTo(bx, by); ctx.stroke();
+                        ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.arc(bx, by, 6, 0, Math.PI*2); ctx.fill();
+                        if(r > rDisk) ballActive = false; 
+                    }
+                }
+                ctx.restore();
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+
+    // --- Sim 10: Center of Mass ---
+    initCanvas('sim-com', (canvas, ctx) => {
+        let angle = 0; let m1 = 1; let m2 = 1;
+        document.getElementById('slider-com-ratio').addEventListener('input', (e) => {
+            const ratio = parseFloat(e.target.value);
+            m1 = 2 * (ratio / (ratio + 1)); m2 = 2 * (1 / (ratio + 1));
+        });
+
+        function draw() {
+            if (canvas.dataset.visible === 'true') {
+                ctx.fillStyle = '#fafafa'; ctx.fillRect(0, 0, canvas.width, canvas.height);
+                const cx = canvas.width / 2; const cy = canvas.height / 2;
+                const dist = 140; 
+                angle += 0.015;
+
+                const totalM = m1 + m2; const r1 = (m2 / totalM) * dist; const r2 = (m1 / totalM) * dist;
+                const x1 = cx - r1 * Math.cos(angle); const y1 = cy - r1 * Math.sin(angle);
+                const x2 = cx + r2 * Math.cos(angle); const y2 = cy + r2 * Math.sin(angle);
+
+                ctx.strokeStyle = '#e2e8f0'; ctx.lineWidth = 2;
+                ctx.beginPath(); ctx.arc(cx, cy, r1, 0, Math.PI*2); ctx.stroke();
+                ctx.beginPath(); ctx.arc(cx, cy, r2, 0, Math.PI*2); ctx.stroke();
+
+                ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 2; ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2, y2); ctx.stroke();
+                ctx.strokeStyle = '#10b981'; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(cx - 10, cy); ctx.lineTo(cx + 10, cy); ctx.moveTo(cx, cy - 10); ctx.lineTo(cx, cy + 10); ctx.stroke();
+
+                ctx.fillStyle = '#3b82f6'; ctx.beginPath(); ctx.arc(x1, y1, 10 + m1*5, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = '#f59e0b'; ctx.beginPath(); ctx.arc(x2, y2, 10 + m2*5, 0, Math.PI*2); ctx.fill();
+            }
+            window.requestAnimationFrame(draw);
+        }
+        draw();
+    });
+</script>
+</body>
+</html>
